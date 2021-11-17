@@ -7,6 +7,13 @@
         <Company>bridgefield GmbH</Company>
         <RepositoryUrl>https://github.com/bridgefield/FoundationalBits</RepositoryUrl>
         <Owner>bridgefield</Owner>
+        <LangVersion>9</LangVersion>
+        <RootNamespace>bridgefield.FoundationalBits</RootNamespace>
+        <AssemblyName>bridgefield.FoundationalBits</AssemblyName>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="bridgefield.MonadicBits" Version="0.4.0" />
+      <PackageReference Include="System.Threading.Tasks.Dataflow" Version="6.0.0" />
+    </ItemGroup>
 </Project>
