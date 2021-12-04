@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundationalBits", "FoundationalBits\FoundationalBits.csproj", "{880C3897-D71D-4917-86CA-88D16D916DC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundationalBitsTests", "FoundationalBitsTests\FoundationalBitsTests.csproj", "{C8ABFCE7-1DF3-4ADC-A06A-46734FE8B9C4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundationalBits.Spec", "FoundationalBits.Spec\FoundationalBits.Spec.csproj", "{C8ABFCE7-1DF3-4ADC-A06A-46734FE8B9C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

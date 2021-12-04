@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-namespace bridgefield.FoundationalBits.State
+namespace bridgefield.FoundationalBits.Agents
 {
     public sealed class StatefulAgent<TState, TCommand, TReply> : IAgent<TCommand, TReply>
     {
@@ -12,20 +12,21 @@ namespace bridgefield.FoundationalBits.State
             Func<TState, TCommand, Task<(TState newState, TReply reply)>> processor)
         {
             var state = initialState;
+
             actions = new ActionBlock<(TCommand command, TaskCompletionSource<TReply> task)>(
-                async t =>
-                {
-                    try
+                data => processor(state, data.command)
+                    .ContinueWith(task =>
                     {
-                        var (newState, reply) = await processor(state, t.command);
-                        state = newState;
-                        t.task.SetResult(reply);
-                    }
-                    catch (Exception e)
-                    {
-                        t.task.SetException(e);
-                    }
-                });
+                        if (task.IsFaulted)
+                        {
+                            data.task.SetException(task.Exception);
+                        }
+                        else
+                        {
+                            state = task.Result.newState;
+                            data.task.SetResult(task.Result.reply);
+                        }
+                    }));
         }
 
         public Task<TReply> Tell(TCommand command)

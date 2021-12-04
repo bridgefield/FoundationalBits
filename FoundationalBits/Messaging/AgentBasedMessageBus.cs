@@ -21,15 +21,24 @@ namespace bridgefield.FoundationalBits.Messaging
         public void Unsubscribe(object subscriber) =>
             agent.Tell(new UnsubscribeTarget(subscriber));
 
-        public async Task Publish(object argument) =>
-            Task.WaitAll(
-                (await agent.Tell(new SelectSubscriptions(argument.GetType())))
-                .Select(s => s.Handler(argument.GetType())
-                    .Match(
-                        h => h.Post(argument),
-                        () => agent.Tell(new RemoveSubscription(s))))
-                .ToArray()
-            );
+        public async Task Publish(object argument)
+        {
+            try
+            {
+                Task.WaitAll(
+                    (await agent.Tell(new SelectSubscriptions(argument.GetType())))
+                    .Select(s => s.Handler(argument.GetType())
+                        .Match(
+                            h => h.Post(argument),
+                            () => agent.Tell(new RemoveSubscription(s))))
+                    .ToArray()
+                );
+            }
+            catch (Exception exception)
+            {
+                throw DispatchFailed.Handle(exception);
+            }
+        }
 
         private abstract record SubscriptionCommand
         {

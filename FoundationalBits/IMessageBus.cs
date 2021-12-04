@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace bridgefield.FoundationalBits.Messaging
+namespace bridgefield.FoundationalBits
 {
     public interface IMessageBus
     {
