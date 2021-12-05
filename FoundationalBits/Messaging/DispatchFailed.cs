@@ -19,13 +19,13 @@ namespace bridgefield.FoundationalBits.Messaging
         {
         }
 
-        public static DispatchFailed Create(string source, Exception error) =>
+        internal static DispatchFailed Create(string source, Exception error) =>
             new($"Dispatch to {source} failed.", error);
 
-        public static DispatchFailed Create(Exception error) =>
+        internal static DispatchFailed Create(Exception error) =>
             new("Dispatch failed.", error);
 
-        public static DispatchFailed Handle(object target, Exception exception) =>
+        internal static DispatchFailed Handle(object target, Exception exception) =>
             exception switch
             {
                 AggregateException aggregateException when aggregateException.InnerExceptions.Count == 1 => Handle(
@@ -35,7 +35,7 @@ namespace bridgefield.FoundationalBits.Messaging
                 _ => Create(target.ToString(), exception)
             };
 
-        public static DispatchFailed Handle(Exception exception) =>
+        internal static DispatchFailed Handle(Exception exception) =>
             exception switch
             {
                 AggregateException aggregateException when aggregateException.InnerExceptions.Count == 1 =>
