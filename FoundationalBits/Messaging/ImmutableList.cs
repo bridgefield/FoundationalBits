@@ -52,14 +52,8 @@ namespace bridgefield.FoundationalBits.Messaging
 
         private sealed record TailedBucket(T Head, IBucket Tail) : IBucket
         {
-            public IEnumerable<T> AsEnumerable()
-            {
-                yield return Head;
-                foreach (var item in Tail.AsEnumerable())
-                {
-                    yield return item;
-                }
-            }
+            public IEnumerable<T> AsEnumerable() =>
+                new TailedBucketEnumerable(this);
 
             public ImmutableList<T> ToList() => new(this);
 
@@ -71,6 +65,48 @@ namespace bridgefield.FoundationalBits.Messaging
             public TResult Match<TResult>(
                 Func<TResult> empty,
                 Func<T, IBucket, TResult> headAndTail) => headAndTail(Head, Tail);
+        }
+
+        private sealed class TailedBucketEnumerable : IEnumerable<T>
+        {
+            private readonly TailedBucket bucket;
+
+            public TailedBucketEnumerable(TailedBucket bucket) => this.bucket = bucket;
+
+            public IEnumerator<T> GetEnumerator() => new TailedBucketEnumerator(bucket);
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        private sealed class TailedBucketEnumerator : IEnumerator<T>
+        {
+            private TailedBucket currentBucket;
+            private bool started;
+            private bool hasMore = true;
+
+            public TailedBucketEnumerator(TailedBucket currentBucket) => this.currentBucket = currentBucket;
+
+            public bool MoveNext()
+            {
+                if (!started)
+                    started = true;
+                else if (currentBucket.Tail is TailedBucket tail)
+                    currentBucket = tail;
+                else
+                    hasMore = false;
+
+                return hasMore;
+            }
+
+            public void Reset()
+            {
+            }
+
+            public T Current => currentBucket.Head;
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() => Reset();
         }
     }
 }
