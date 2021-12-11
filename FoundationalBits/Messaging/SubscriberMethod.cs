@@ -6,7 +6,7 @@ using MonadicBits;
 
 namespace bridgefield.FoundationalBits.Messaging
 {
-    public sealed record SubscriberMethod(MethodInfo Method, Type ArgumentType)
+    internal sealed record SubscriberMethod(MethodInfo Method, Type ArgumentType)
     {
         public Maybe<object> Invoke(object target, object argument)
         {
@@ -20,7 +20,7 @@ namespace bridgefield.FoundationalBits.Messaging
             }
         }
 
-        public static IEnumerable<SubscriberMethod> FromType(Type type) =>
+        public static IEnumerable<SubscriberMethod> ForType(Type type) =>
             type
                 .GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(m => m.Name == nameof(IHandle<int>.Handle)

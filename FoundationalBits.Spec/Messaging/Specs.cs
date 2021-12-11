@@ -29,9 +29,9 @@ namespace FoundationalBits.Spec.Messaging
         {
             var cut = new AgentBasedMessageBus();
             cut.Subscribe(subscriber);
-            
+
             Assert.CatchAsync<DispatchFailed>(() => cut.Publish(new object()))
-                .Should().Match<DispatchFailed>(e=>e.InnerException is TestError);
+                .Should().Match<DispatchFailed>(e => e.InnerException is TestError);
         }
 
         [TestCaseSource(nameof(ErrorSubscribers))]
@@ -65,9 +65,9 @@ namespace FoundationalBits.Spec.Messaging
                 new AsyncThrowingHandler<object>()
             };
             var cut = new AgentBasedMessageBus();
-            errorSubscribers.ForEach(s=>cut.Subscribe(s));
+            errorSubscribers.ForEach(s => cut.Subscribe(s));
             Assert.CatchAsync<DispatchFailed>(() => cut.Publish(new object()))
-                .Should().Match<DispatchFailed>(e=>HasMultipleDispatchErrors(e));
+                .Should().Match<DispatchFailed>(e => HasMultipleDispatchErrors(e));
         }
 
         private static bool HasMultipleDispatchErrors(DispatchFailed error) =>
@@ -125,7 +125,9 @@ namespace FoundationalBits.Spec.Messaging
         public void Handle(T message) => Monitor.Handle(message);
     }
 
-    public sealed class TestError : Exception{}
+    public sealed class TestError : Exception
+    {
+    }
 
     public sealed record ThrowingHandler<T> : IHandle<T>
     {
@@ -151,7 +153,7 @@ namespace FoundationalBits.Spec.Messaging
 
         public static void SubscribeUnsubscribe<T>(this IMessageBus messageBus, IHandle<T> handler)
         {
-            messageBus.Subscribe(handler);
+            messageBus.Subscribe(handler, SubscriptionLifecycle.ExplicitUnsubscribe);
             messageBus.Unsubscribe(handler);
         }
 
@@ -161,7 +163,6 @@ namespace FoundationalBits.Spec.Messaging
             {
                 GC.Collect();
                 await Task.Yield();
-                //await Task.Delay(1);
             }
         }
     }

@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace bridgefield.FoundationalBits.Messaging
 {
-    public sealed record Handler(object Target, SubscriberMethod Method)
+    internal sealed record Handler(object Target, SubscriberMethod Method)
     {
         public Task Post(object argument) =>
             Task.Run(() => Method.Invoke(Target, argument)
