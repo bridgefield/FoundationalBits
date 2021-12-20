@@ -4,35 +4,30 @@ using System.Threading.Tasks.Dataflow;
 
 namespace bridgefield.FoundationalBits.Agents
 {
-    public sealed class StatefulAgent<TState, TCommand, TReply> : IAgent<TCommand, TReply>
+    internal sealed class StatefulAgent<TState, TCommand, TReply> : IAgent<TCommand, TReply>
     {
-        private readonly ActionBlock<(TCommand command, TaskCompletionSource<TReply> task)> actions;
+        private readonly ActionBlock<(TCommand command, TaskCompletionSource<TReply> task)> actionBlock;
 
         public StatefulAgent(TState initialState,
             Func<TState, TCommand, Task<(TState newState, TReply reply)>> processor)
         {
             var state = initialState;
 
-            actions = new ActionBlock<(TCommand command, TaskCompletionSource<TReply> task)>(
+            actionBlock = new(
                 data => processor(state, data.command)
-                    .ContinueWith(task =>
-                    {
-                        if (task.IsFaulted)
+                    .HandleResult(
+                        r =>
                         {
-                            data.task.SetException(task.Exception);
-                        }
-                        else
-                        {
-                            state = task.Result.newState;
-                            data.task.SetResult(task.Result.reply);
-                        }
-                    }));
+                            state = r.newState;
+                            data.task.SetResult(r.reply);
+                        },
+                        data.task.SetException));
         }
 
         public Task<TReply> Tell(TCommand command)
         {
             var completionSource = new TaskCompletionSource<TReply>(TaskCreationOptions.RunContinuationsAsynchronously);
-            actions.Post((command, completionSource));
+            actionBlock.Post((command, completionSource));
             return completionSource.Task;
         }
     }

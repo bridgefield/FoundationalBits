@@ -17,7 +17,7 @@ Useful bits for foundational groundwork in C# applications.
   
   ...
   
-  var messageBus = new AgentBasedMessageBus()
+  var messageBus = MessageBus.Create()
   messageBus.Subscribe(
     new Receiver(),
     SubscriptionLifecycle.ExplicitUnsubscribe);
@@ -35,7 +35,7 @@ Useful bits for foundational groundwork in C# applications.
     Decrement,
     Current,
   }
-  var counter = IAgent<CounterCommand,int>.Start<int>(
+  var counter = Agent.Start<CounterCommand,int,int>(
     0,
     (current,command) => command switch{
       CounterCommand.Increment => (current+1, current+1),
