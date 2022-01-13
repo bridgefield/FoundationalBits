@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -17,23 +16,12 @@ namespace bridgefield.FoundationalBits.Messaging
         public ImmutableList<T> Remove(T item) => bucket.Remove(item).ToList();
         public static ImmutableList<T> Create() => new EmptyBucket().ToList();
 
-        public TResult Match<TResult>(
-            Func<TResult> empty,
-            Func<T, ImmutableList<T>, TResult> headAndTail) =>
-            bucket.Match(
-                empty,
-                (h, t) => headAndTail(h, t.ToList()));
-
         private interface IBucket
         {
             IEnumerable<T> AsEnumerable();
             ImmutableList<T> ToList();
             IBucket Add(T item) => new TailedBucket(item, this);
             IBucket Remove(T item);
-
-            TResult Match<TResult>(
-                Func<TResult> empty,
-                Func<T, IBucket, TResult> headAndTail);
         }
 
         private sealed record EmptyBucket : IBucket
@@ -45,15 +33,12 @@ namespace bridgefield.FoundationalBits.Messaging
 
             public ImmutableList<T> ToList() => new(this);
             public IBucket Remove(T item) => this;
-
-            public TResult Match<TResult>(Func<TResult> empty, Func<T, IBucket, TResult> headAndTail) =>
-                empty();
         }
 
         private sealed record TailedBucket(T Head, IBucket Tail) : IBucket
         {
             public IEnumerable<T> AsEnumerable() =>
-                new TailedBucketEnumerable(this);
+                new ValueEnumerable(this);
 
             public ImmutableList<T> ToList() => new(this);
 
@@ -61,30 +46,27 @@ namespace bridgefield.FoundationalBits.Messaging
                 Equals(item, Head)
                     ? Tail.Remove(item)
                     : new TailedBucket(Head, Tail.Remove(item));
-
-            public TResult Match<TResult>(
-                Func<TResult> empty,
-                Func<T, IBucket, TResult> headAndTail) => headAndTail(Head, Tail);
         }
 
-        private sealed class TailedBucketEnumerable : IEnumerable<T>
+        private sealed class ValueEnumerable : IEnumerable<T>
         {
             private readonly TailedBucket bucket;
 
-            public TailedBucketEnumerable(TailedBucket bucket) => this.bucket = bucket;
+            public ValueEnumerable(TailedBucket bucket) => this.bucket = bucket;
 
-            public IEnumerator<T> GetEnumerator() => new TailedBucketEnumerator(bucket);
+            public IEnumerator<T> GetEnumerator() => new ValueEnumerator(bucket);
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
-        private sealed class TailedBucketEnumerator : IEnumerator<T>
+        private sealed class ValueEnumerator : IEnumerator<T>
         {
             private TailedBucket currentBucket;
             private bool started;
             private bool hasMore = true;
 
-            public TailedBucketEnumerator(TailedBucket currentBucket) => this.currentBucket = currentBucket;
+            public ValueEnumerator(TailedBucket currentBucket) =>
+                this.currentBucket = currentBucket;
 
             public bool MoveNext()
             {

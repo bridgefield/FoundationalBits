@@ -14,7 +14,7 @@ namespace FoundationalBits.Spec.Messaging
         [Test]
         public static async Task to_an_interested_subscriber()
         {
-            var cut = new AgentBasedMessageBus();
+            var cut = MessageBus.Create();
             var monitor = new HandleMonitor<object>();
             cut.Subscribe(monitor);
             await cut.Publish(new object());
@@ -27,7 +27,7 @@ namespace FoundationalBits.Spec.Messaging
         [TestCaseSource(nameof(ErrorSubscribers))]
         public static void is_propagated_to_sender(object subscriber)
         {
-            var cut = new AgentBasedMessageBus();
+            var cut = MessageBus.Create();
             cut.Subscribe(subscriber);
 
             Assert.CatchAsync<DispatchFailed>(() => cut.Publish(new object()))
@@ -38,7 +38,7 @@ namespace FoundationalBits.Spec.Messaging
         public static void does_not_prevent_dispatch_to_other_subscribers(
             object subscriber)
         {
-            var cut = new AgentBasedMessageBus();
+            var cut = MessageBus.Create();
             cut.Subscribe(subscriber);
             var monitor = new HandleMonitor<object>();
             cut.Subscribe(monitor);
@@ -64,7 +64,7 @@ namespace FoundationalBits.Spec.Messaging
                 new ThrowingHandler<object>(),
                 new AsyncThrowingHandler<object>()
             };
-            var cut = new AgentBasedMessageBus();
+            var cut = MessageBus.Create();
             errorSubscribers.ForEach(s => cut.Subscribe(s));
             Assert.CatchAsync<DispatchFailed>(() => cut.Publish(new object()))
                 .Should().Match<DispatchFailed>(e => HasMultipleDispatchErrors(e));
@@ -81,7 +81,7 @@ namespace FoundationalBits.Spec.Messaging
         [Test]
         public static async Task to_garbage_collected_subscribers()
         {
-            var cut = new AgentBasedMessageBus();
+            var cut = MessageBus.Create();
             var monitor = new HandleMonitor<object>();
             await cut.SubscribeWeak(new TestHandler<object>(monitor)).WaitForCollection();
             await cut.Publish(new object());
@@ -91,7 +91,7 @@ namespace FoundationalBits.Spec.Messaging
         [Test]
         public static async Task to_unsubscribed_subscribers()
         {
-            var cut = new AgentBasedMessageBus();
+            var cut = MessageBus.Create();
             var monitor = new HandleMonitor<object>();
             cut.SubscribeUnsubscribe(new TestHandler<object>(monitor));
             await cut.Publish(new object());
@@ -101,7 +101,7 @@ namespace FoundationalBits.Spec.Messaging
         [Test]
         public static async Task to_uninterested_subscribers()
         {
-            var cut = new AgentBasedMessageBus();
+            var cut = MessageBus.Create();
             var monitor = new HandleMonitor<int>();
             var subscriber = new TestHandler<int>(monitor);
             cut.Subscribe(subscriber);

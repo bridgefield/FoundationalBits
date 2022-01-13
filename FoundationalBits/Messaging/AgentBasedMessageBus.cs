@@ -5,16 +5,17 @@ using System.Threading.Tasks;
 
 namespace bridgefield.FoundationalBits.Messaging
 {
-    public sealed class AgentBasedMessageBus : IMessageBus
+    internal sealed class AgentBasedMessageBus : IMessageBus
     {
         private sealed record State(ImmutableList<Subscription> Subscriptions);
 
         private readonly IAgent<SubscriptionCommand, IEnumerable<Subscription>> agent;
 
         public AgentBasedMessageBus() =>
-            agent = IAgent<SubscriptionCommand, IEnumerable<Subscription>>.Start(
+            agent = Agent.Start<State, SubscriptionCommand, IEnumerable<Subscription>>(
                 new State(ImmutableList<Subscription>.Create()),
-                (state, command) => command.Execute(state));
+                (state, command) => command.Execute(state)
+            );
 
         public void Subscribe(object subscriber) =>
             Subscribe(subscriber, SubscriptionLifecycle.GarbageCollected);
