@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MonadicBits;
 
 namespace bridgefield.FoundationalBits.Messaging
 {
+    using static Functional;
+
     internal sealed class AgentBasedMessageBus : IMessageBus
     {
         private sealed record State(ImmutableList<Subscription> Subscriptions);
@@ -33,20 +36,40 @@ namespace bridgefield.FoundationalBits.Messaging
         {
             try
             {
-                Task.WaitAll(
+                var result = await Task.WhenAll(
                     (await agent.Tell(new SelectSubscriptions(argument.GetType())))
-                    .Select(s => s
-                        .Handler(argument.GetType())
-                        .Match(
-                            h => h.Post(argument),
-                            () => agent.Tell(new RemoveSubscription(s))))
+                    .Select(s => Dispatch(argument, s))
                     .ToArray()
                 );
+
+                var errors = result.SelectMany(error => error.ToEnumerable()).ToList();
+                if (errors.Any())
+                {
+                    throw new AggregateException(errors);
+                }
             }
             catch (Exception exception)
             {
                 throw DispatchFailed.Handle(exception);
             }
+        }
+
+        private async Task<Maybe<DispatchFailed>> Dispatch(object argument, Subscription s)
+        {
+            try
+            {
+                await s
+                    .Handler(argument.GetType())
+                    .Match(
+                        h => h.Post(argument),
+                        () => agent.Tell(new RemoveSubscription(s)));
+            }
+            catch (DispatchFailed error)
+            {
+                return error;
+            }
+
+            return Nothing;
         }
 
         private abstract record SubscriptionCommand
