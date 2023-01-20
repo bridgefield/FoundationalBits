@@ -7,9 +7,10 @@
         <Company>bridgefield GmbH</Company>
         <RepositoryUrl>https://github.com/bridgefield/FoundationalBits</RepositoryUrl>
         <Owner>bridgefield</Owner>
-        <LangVersion>9</LangVersion>
+        <LangVersion>10</LangVersion>
         <RootNamespace>bridgefield.FoundationalBits</RootNamespace>
         <AssemblyName>bridgefield.FoundationalBits</AssemblyName>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
     <ItemGroup>
