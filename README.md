@@ -55,10 +55,10 @@ Useful bits for foundational groundwork in C# applications.
   await counter.Tell(CounterCommand.Decrement);
   
   ...
-  //output: "0" regardless of ordering of previous calls
+  //output: "0" regardless of context switches, as long as pervious two calls are started before
   Console.WriteLine(await counter.Tell(CounterCommand.Current));
   ```
-- state less agent to ensure generalized sequential execution of actions
+- Stateless agent to ensure generalized sequential execution of actions
   triggered from different background tasks without explicit synchronization
 
 ## Contributors
