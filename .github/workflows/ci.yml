@@ -41,9 +41,9 @@ jobs:
       with:
         result-encoding: string
         script: |
-          await github.rest.repos.createDispatchEvent({
-            owner: "BF",
-            repo: "foundational-bits",
-            event_type: "ci-successful",
-            client_payload: { sha: context.sha, ref_name: context.ref.replace("refs/heads/", "") }
-          }).then(console.log).catch(console.error);
+          github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'codeql-analysis.yml',
+              ref: context.ref,
+            })
